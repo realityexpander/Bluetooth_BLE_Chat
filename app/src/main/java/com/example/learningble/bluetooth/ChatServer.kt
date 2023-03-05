@@ -1,5 +1,6 @@
 package com.example.learningble.bluetooth
 
+import android.annotation.SuppressLint
 import android.app.Application
 import android.bluetooth.*
 import android.bluetooth.le.AdvertiseCallback
@@ -7,18 +8,22 @@ import android.bluetooth.le.AdvertiseData
 import android.bluetooth.le.AdvertiseSettings
 import android.bluetooth.le.BluetoothLeAdvertiser
 import android.content.Context
-import android.content.Intent
 import android.os.ParcelUuid
 import android.util.Log
-import android.widget.Toast
-import androidx.activity.ComponentActivity
-import androidx.activity.result.contract.ActivityResultContracts
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import com.example.learningble.models.Message
 import com.example.learningble.states.DeviceConnectionState
 import com.example.learningble.utils.MESSAGE_UUID
 import com.example.learningble.utils.SERVICE_UUID
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.ensureActive
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+
 
 private const val TAG = "ChatServerTAG"
 
@@ -53,11 +58,15 @@ object ChatServer {
     private var gatt: BluetoothGatt? = null
     private var messageCharacteristic: BluetoothGattCharacteristic? = null
 
+    private var count = 0
+
     fun startServer(app: Application) {
         bluetoothManager = app.getSystemService(Context.BLUETOOTH_SERVICE) as BluetoothManager
         adapter = bluetoothManager.adapter
         setupGattServer(app)
         startAdvertisement()
+
+        println("ChatServer started")
     }
 
     fun stopServer() {
@@ -71,12 +80,15 @@ object ChatServer {
         connectToChatDevice(device)
     }
 
+    @SuppressLint("MissingPermission")
     private fun connectToChatDevice(device: BluetoothDevice) {
         gattClientCallback = GattClientCallback()
         gattClient = device.connectGatt(app, false, gattClientCallback)
     }
 
+    @SuppressLint("MissingPermission")
     fun sendMessage(message: String): Boolean {
+
         messageCharacteristic?.let { characteristic ->
             characteristic.writeType = BluetoothGattCharacteristic.WRITE_TYPE_DEFAULT
 
@@ -89,10 +101,12 @@ object ChatServer {
                 }
             }
         }
+
         return false
     }
 
 
+    @SuppressLint("MissingPermission")
     fun setupGattServer(app: Application) {
         Log.i(TAG,"setupGattServer")
         gattServerCallback = GattServerCallback()
@@ -117,7 +131,8 @@ object ChatServer {
         return service
     }
 
-    fun startAdvertisement() {
+    @SuppressLint("MissingPermission")
+    fun startAdvertisement() { // Broadcast the service UUID over BLE so it can be found.
         advertiser = adapter.bluetoothLeAdvertiser
 
         if (advertiseCallback == null) {
@@ -127,6 +142,7 @@ object ChatServer {
         }
     }
 
+    @SuppressLint("MissingPermission")
     private fun stopAdvertising() {
         Log.d(TAG, "Stopping Advertising with advertiser $advertiser")
         if(advertiseCallback != null)
@@ -139,6 +155,7 @@ object ChatServer {
         val dataBuilder = AdvertiseData.Builder()
             .addServiceUuid(ParcelUuid(SERVICE_UUID))
             .setIncludeDeviceName(true)
+            .setIncludeTxPowerLevel(true)
 
         return dataBuilder.build()
     }
@@ -146,6 +163,7 @@ object ChatServer {
 
     private fun buildAdvertiseSettings(): AdvertiseSettings {
         return AdvertiseSettings.Builder()
+//            .setAdvertiseMode(AdvertiseSettings.ADVERTISE_MODE_LOW_POWER)
             .setAdvertiseMode(AdvertiseSettings.ADVERTISE_MODE_LOW_POWER)
             .setTimeout(0)
             .build()
@@ -156,6 +174,7 @@ object ChatServer {
             super.onConnectionStateChange(device, status, newState)
             val isSuccess = status == BluetoothGatt.GATT_SUCCESS
             val isConnected = newState == BluetoothProfile.STATE_CONNECTED
+
             if (isSuccess && isConnected) {
                 setCurrentChatConnection(device)
             } else {
@@ -163,6 +182,7 @@ object ChatServer {
             }
         }
 
+        @SuppressLint("MissingPermission")
         override fun onCharacteristicWriteRequest(
             device: BluetoothDevice,
             requestId: Int,
@@ -184,14 +204,29 @@ object ChatServer {
             if (characteristic.uuid == MESSAGE_UUID) {
                 gattServer?.sendResponse(device, requestId, BluetoothGatt.GATT_SUCCESS, 0, null)
                 val message = value?.toString(Charsets.UTF_8)
-                message?.let {
-                    _messages.postValue(Message.RemoteMessage(it))
+
+                CoroutineScope(Dispatchers.IO).launch {
+                    message?.let {
+                        _messages.postValue(Message.RemoteMessage(it))
+                    }
                 }
             }
+        }
+
+        @SuppressLint("MissingPermission")
+        override fun onCharacteristicReadRequest(
+            device: BluetoothDevice?,
+            requestId: Int,
+            offset: Int,
+            characteristic: BluetoothGattCharacteristic
+        ) {
+            super.onCharacteristicReadRequest(device, requestId, offset, characteristic)
+            gattServer?.sendResponse(device, requestId, 1, offset, characteristic.value)
         }
     }
 
     private class GattClientCallback : BluetoothGattCallback() {
+        @SuppressLint("MissingPermission")
         override fun onConnectionStateChange(gatt: BluetoothGatt, status: Int, newState: Int) {
             super.onConnectionStateChange(gatt, status, newState)
             val isSuccess = status == BluetoothGatt.GATT_SUCCESS
@@ -200,6 +235,17 @@ object ChatServer {
             if (isSuccess && isConnected) {
                 gatt.discoverServices()
             }
+
+//            // Handle disconnect
+//            if(!isSuccess && newState == BluetoothProfile.STATE_DISCONNECTED) {
+//                println("Disconnected")
+//                _deviceConnection.postValue(DeviceConnectionState.Disconnected)
+//            }
+            if(isSuccess && newState == BluetoothProfile.STATE_DISCONNECTED) {
+                println("Disconnected")
+                _deviceConnection.postValue(DeviceConnectionState.Disconnected)
+            }
+
         }
 
         override fun onServicesDiscovered(discoveredGatt: BluetoothGatt, status: Int) {
@@ -207,8 +253,11 @@ object ChatServer {
             if (status == BluetoothGatt.GATT_SUCCESS) {
                 gatt = discoveredGatt
                 val service = discoveredGatt.getService(SERVICE_UUID)
+
                 if(service != null)
                     messageCharacteristic = service.getCharacteristic(MESSAGE_UUID)
+                else
+                    Log.e(TAG, "Service not found")
             }
         }
     }
@@ -222,7 +271,7 @@ object ChatServer {
 
         override fun onStartSuccess(settingsInEffect: AdvertiseSettings) {
             super.onStartSuccess(settingsInEffect)
-            Log.d(TAG, "successfully started")
+            Log.d(TAG, "Advertise successfully started")
         }
     }
 }

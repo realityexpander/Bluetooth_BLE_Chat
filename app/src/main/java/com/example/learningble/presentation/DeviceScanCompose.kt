@@ -1,5 +1,6 @@
 package com.example.learningble.presentation
 
+import android.annotation.SuppressLint
 import android.bluetooth.BluetoothDevice
 import android.util.Log
 import androidx.compose.foundation.background
@@ -26,6 +27,7 @@ private const val TAG = "DeviceScanCompose"
 object DeviceScanCompose {
 
 
+    @SuppressLint("MissingPermission")
     @Composable
     fun ShowDevices(
         scanResults: Map<String, BluetoothDevice>,
@@ -63,6 +65,7 @@ object DeviceScanCompose {
         }
     }
 
+    @SuppressLint("MissingPermission")
     @Composable
     fun DeviceScan(deviceScanViewState: DeviceScanViewState, onDeviceSelected: () -> Unit) {
         when (deviceScanViewState) {

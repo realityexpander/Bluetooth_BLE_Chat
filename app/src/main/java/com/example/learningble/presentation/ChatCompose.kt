@@ -27,36 +27,13 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.learningble.bluetooth.ChatServer
 import com.example.learningble.models.Message
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.yield
 
 private const val TAG = "ChatCompose"
 
 object ChatCompose {
 
-
-    @Composable
-    fun ShowChat(message: Message) {
-        Row(
-            modifier = Modifier
-                .padding(5.dp)
-                .fillMaxWidth(),
-            horizontalArrangement = if (message is Message.RemoteMessage) Arrangement.Start else Arrangement.End
-        ) {
-            Box(
-                modifier = Modifier
-                    .width(150.dp)
-                    .padding(5.dp)
-                    .border(1.dp, Color.Black, shape = RoundedCornerShape(10.dp))
-                    .background(
-                        if (message is Message.RemoteMessage) Color(0xFFD3D3D3) else Color(
-                            0xFF90EE90
-                        ),
-                        shape = RoundedCornerShape(10.dp)
-                    )
-            ) {
-                Text(text = message.text, color = Color.Black, modifier = Modifier.padding(10.dp))
-            }
-        }
-    }
 
     @Composable
     fun Chats(deviceName: String?) {
@@ -72,6 +49,14 @@ object ChatCompose {
             messageList.add(message!!)
         }
 
+//        LaunchedEffect(deviceName) {
+//            while(true){
+//                yield()
+//                ChatServer.sendMessage("ping:" + System.currentTimeMillis().toString().takeLast(6))
+//                println("ping:" + System.currentTimeMillis().toString().takeLast(6))
+//                delay(1000)
+//            }
+//        }
 
 
         if (messageList.isNotEmpty()) {
@@ -86,7 +71,7 @@ object ChatCompose {
                 Surface(modifier = Modifier
                     .padding(all = Dp(5f))
                     .fillMaxHeight(fraction = 0.85f)) {
-                    ChatsList(messageList)
+                    ChatsList(messageList.reversed())
                 }
 
 
@@ -100,7 +85,7 @@ object ChatCompose {
                 ) {
                     Text(text = "No Chat History")
                 }
-                
+
                 InputField(inputvalue = inputvalue)
             }
         }
@@ -136,8 +121,10 @@ object ChatCompose {
 
             Button(
                 onClick = {
-                    if (inputvalue.value.text.isNotEmpty()) {
-                        ChatServer.sendMessage(inputvalue.value.text)
+//                    if (inputvalue.value.text.isNotEmpty()) {
+                    if (true) {
+                        ChatServer.sendMessage(inputvalue.value.text +
+                                ":" + System.currentTimeMillis().toString().takeLast(6))
                         inputvalue.value = TextFieldValue()
                     }
                 },
@@ -147,13 +134,38 @@ object ChatCompose {
             }
         }
     }
-    
+
     @Composable
     fun ChatsList(messagesList: List<Message>) {
         LazyColumn(modifier = Modifier.background(Color.White)) {
             items(count = messagesList.size) { index ->
                 if (messagesList.isNotEmpty())
                     ShowChat(message = messagesList[index])
+            }
+        }
+    }
+
+    @Composable
+    fun ShowChat(message: Message) {
+        Row(
+            modifier = Modifier
+                .padding(5.dp)
+                .fillMaxWidth(),
+            horizontalArrangement = if (message is Message.RemoteMessage) Arrangement.Start else Arrangement.End
+        ) {
+            Box(
+                modifier = Modifier
+                    .width(150.dp)
+                    .padding(5.dp)
+                    .border(1.dp, Color.Black, shape = RoundedCornerShape(10.dp))
+                    .background(
+                        if (message is Message.RemoteMessage) Color(0xFFD3D3D3) else Color(
+                            0xFF90EE90
+                        ),
+                        shape = RoundedCornerShape(10.dp)
+                    )
+            ) {
+                Text(text = message.text, color = Color.Black, modifier = Modifier.padding(10.dp))
             }
         }
     }

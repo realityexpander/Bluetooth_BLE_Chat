@@ -1,5 +1,6 @@
 package com.example.learningble.viewmodels
 
+import android.annotation.SuppressLint
 import android.app.Application
 import android.bluetooth.*
 import android.bluetooth.le.*
@@ -9,8 +10,13 @@ import android.util.Log
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.viewModelScope
+import com.example.learningble.bluetooth.ChatServer
 import com.example.learningble.utils.SERVICE_UUID
 import com.example.learningble.states.DeviceScanViewState
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.yield
 
 
 private const val TAG = "DeviceScanViewModel"
@@ -33,11 +39,7 @@ class DeviceScanViewModel(app: Application) : AndroidViewModel(app) {
     private lateinit var scanFilters: List<ScanFilter>
     private lateinit var scanSettings: ScanSettings
 
-    override fun onCleared() {
-        super.onCleared()
-        stopScanning()
-    }
-
+    @SuppressLint("MissingPermission")
     fun startScan() {
         scanFilters = buildScanFilters()
         scanSettings = buildScanSettings()
@@ -56,12 +58,12 @@ class DeviceScanViewModel(app: Application) : AndroidViewModel(app) {
         }
     }
 
+    @SuppressLint("MissingPermission")
     private fun stopScanning() {
         scanner?.stopScan(scanCallback)
         scanCallback = null
         _viewState.value = DeviceScanViewState.ScanResults(scanResults)
     }
-
 
     private fun buildScanFilters(): List<ScanFilter> {
         val builder = ScanFilter.Builder()
@@ -73,7 +75,8 @@ class DeviceScanViewModel(app: Application) : AndroidViewModel(app) {
 
     private fun buildScanSettings(): ScanSettings {
         return ScanSettings.Builder()
-            .setScanMode(ScanSettings.SCAN_MODE_LOW_POWER)
+//            .setScanMode(ScanSettings.SCAN_MODE_LOW_POWER)
+            .setScanMode(ScanSettings.SCAN_MODE_LOW_LATENCY)
             .build()
     }
 
@@ -89,7 +92,6 @@ class DeviceScanViewModel(app: Application) : AndroidViewModel(app) {
             Log.i(TAG, scanResults.toString())
             _viewState.value = DeviceScanViewState.ScanResults(scanResults)
         }
-
         override fun onScanResult(
             callbackType: Int,
             result: ScanResult
@@ -106,6 +108,24 @@ class DeviceScanViewModel(app: Application) : AndroidViewModel(app) {
             super.onScanFailed(errorCode)
             val errorMessage = "Scan failed with error: $errorCode"
             _viewState.value = DeviceScanViewState.Error(errorMessage)
+        }
+
+    }
+
+    override fun onCleared() {
+        super.onCleared()
+        stopScanning()
+    }
+
+    fun startPing() {
+        viewModelScope.launch {
+
+            while (true) {
+                yield()
+                ChatServer.sendMessage("ping:" + System.currentTimeMillis().toString().takeLast(6))
+                //println("ping:" + System.currentTimeMillis().toString().takeLast(6))
+                delay(1000)
+            }
         }
     }
 }

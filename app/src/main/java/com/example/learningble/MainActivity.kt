@@ -1,8 +1,10 @@
 package com.example.learningble
 
 import android.Manifest
+import android.annotation.SuppressLint
 import android.bluetooth.BluetoothAdapter
 import android.content.Intent
+import android.os.Build
 import android.os.Bundle
 import android.util.Log
 import androidx.activity.ComponentActivity
@@ -10,6 +12,7 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.setContent
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
+import androidx.annotation.RequiresApi
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.*
 import androidx.compose.runtime.*
@@ -32,6 +35,9 @@ import com.karumi.dexter.PermissionToken
 import com.karumi.dexter.listener.PermissionRequest
 import com.karumi.dexter.listener.multi.MultiplePermissionsListener
 
+// Original code:
+// https://github.com/Arunshaik2001/BLEChatApp.git
+
 private const val TAG = "MainActivityTAG"
 
 class MainActivity : ComponentActivity() {
@@ -43,6 +49,8 @@ class MainActivity : ComponentActivity() {
         ChatServer.stopServer()
     }
 
+    @SuppressLint("MissingPermission")
+    @RequiresApi(Build.VERSION_CODES.S)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -119,7 +127,9 @@ class MainActivity : ComponentActivity() {
                             contentAlignment = Alignment.TopCenter,
                             modifier = Modifier.fillMaxSize()
                         ) {
-                            if (deviceScanningState != null && !isChatOpen || deviceConnectionState == DeviceConnectionState.Disconnected) {
+                            if (deviceScanningState != null
+                                && !isChatOpen
+                                || deviceConnectionState == DeviceConnectionState.Disconnected) {
                                 Column {
                                     Text(
                                         text = "Choose a device to chat with:",
@@ -127,12 +137,21 @@ class MainActivity : ComponentActivity() {
                                         fontWeight = FontWeight.Bold
                                     )
                                     Spacer(modifier = Modifier.height(10.dp))
-                                    DeviceScanCompose.DeviceScan(deviceScanViewState = deviceScanningState!!) {
-                                        isChatOpen = true
-                                    }
+//                                    DeviceScanCompose.DeviceScan(
+//                                        deviceScanViewState = deviceScanningState!!) {
+//                                        isChatOpen = true
+//                                    }
+                                    DeviceScanCompose.DeviceScan(
+                                        deviceScanViewState = deviceScanningState!!,
+                                        onDeviceSelected = {
+                                            isChatOpen = true
+                                            viewModel.startPing()
+                                        }
+                                    )
                                 }
 
-                            } else if (deviceScanningState != null && deviceConnectionState is DeviceConnectionState.Connected) {
+                            } else if (deviceScanningState != null
+                                && deviceConnectionState is DeviceConnectionState.Connected) {
                                 ChatCompose.Chats((deviceConnectionState as DeviceConnectionState.Connected).device.name)
                             } else {
                                 Text(text = "Nothing")
