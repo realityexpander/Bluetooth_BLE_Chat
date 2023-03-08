@@ -1,4 +1,4 @@
-package com.example.learningble
+package com.realityexpander.learningble
 
 import android.Manifest
 import android.annotation.SuppressLint
@@ -23,12 +23,12 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.learningble.bluetooth.ChatServer
-import com.example.learningble.presentation.ChatCompose
-import com.example.learningble.presentation.DeviceScanCompose
-import com.example.learningble.states.DeviceConnectionState
-import com.example.learningble.ui.theme.LearningBLETheme
-import com.example.learningble.viewmodels.DeviceScanViewModel
+import com.realityexpander.learningble.bluetooth.ChatServer
+import com.realityexpander.learningble.presentation.ChatCompose
+import com.realityexpander.learningble.presentation.DeviceScanCompose
+import com.realityexpander.learningble.states.DeviceConnectionState
+import com.realityexpander.learningble.ui.theme.LearningBLETheme
+import com.realityexpander.learningble.viewmodels.DeviceScanViewModel
 import com.karumi.dexter.Dexter
 import com.karumi.dexter.MultiplePermissionsReport
 import com.karumi.dexter.PermissionToken

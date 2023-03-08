@@ -4,11 +4,11 @@ plugins {
 }
 
 android {
-    namespace 'com.example.learningble'
+    namespace 'com.realityexpander.learningble'
     compileSdk 32
 
     defaultConfig {
-        applicationId "com.example.learningble"
+        applicationId "com.realityexpander.learningble"
         minSdk 21
         targetSdk 32
         versionCode 1

@@ -1,4 +1,4 @@
-package com.example.learningble.presentation
+package com.realityexpander.learningble.presentation
 
 import android.annotation.SuppressLint
 import android.bluetooth.BluetoothDevice
@@ -19,8 +19,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.learningble.bluetooth.ChatServer
-import com.example.learningble.states.DeviceScanViewState
+import com.realityexpander.learningble.bluetooth.ChatServer
+import com.realityexpander.learningble.states.DeviceScanViewState
 
 private const val TAG = "DeviceScanCompose"
 

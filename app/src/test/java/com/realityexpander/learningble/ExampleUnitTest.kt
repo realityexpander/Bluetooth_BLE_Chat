@@ -1,4 +1,4 @@
-package com.example.learningble
+package com.realityexpander.learningble
 
 import org.junit.Test
 

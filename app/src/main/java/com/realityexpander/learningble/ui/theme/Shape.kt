@@ -1,4 +1,4 @@
-package com.example.learningble.ui.theme
+package com.realityexpander.learningble.ui.theme
 
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Shapes

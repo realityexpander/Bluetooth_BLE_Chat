@@ -1,4 +1,4 @@
-package com.example.learningble.presentation
+package com.realityexpander.learningble.presentation
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -25,8 +25,8 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.learningble.bluetooth.ChatServer
-import com.example.learningble.models.Message
+import com.realityexpander.learningble.bluetooth.ChatServer
+import com.realityexpander.learningble.models.Message
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.yield
 

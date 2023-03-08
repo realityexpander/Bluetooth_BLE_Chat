@@ -1,4 +1,4 @@
-package com.example.learningble.utils
+package com.realityexpander.learningble.utils
 import java.util.*
 
 val SERVICE_UUID: UUID = UUID.fromString("0000b81d-0000-1000-8000-00805f9b34fb")

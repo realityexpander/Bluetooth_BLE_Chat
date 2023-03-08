@@ -1,4 +1,4 @@
-package com.example.learningble.bluetooth
+package com.realityexpander.learningble.bluetooth
 
 import android.annotation.SuppressLint
 import android.app.Application
@@ -12,10 +12,10 @@ import android.os.ParcelUuid
 import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
-import com.example.learningble.models.Message
-import com.example.learningble.states.DeviceConnectionState
-import com.example.learningble.utils.MESSAGE_UUID
-import com.example.learningble.utils.SERVICE_UUID
+import com.realityexpander.learningble.models.Message
+import com.realityexpander.learningble.states.DeviceConnectionState
+import com.realityexpander.learningble.utils.MESSAGE_UUID
+import com.realityexpander.learningble.utils.SERVICE_UUID
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async

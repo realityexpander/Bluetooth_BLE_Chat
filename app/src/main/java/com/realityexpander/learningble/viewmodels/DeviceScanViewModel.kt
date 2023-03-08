@@ -1,4 +1,4 @@
-package com.example.learningble.viewmodels
+package com.realityexpander.learningble.viewmodels
 
 import android.annotation.SuppressLint
 import android.app.Application
@@ -11,9 +11,9 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
-import com.example.learningble.bluetooth.ChatServer
-import com.example.learningble.utils.SERVICE_UUID
-import com.example.learningble.states.DeviceScanViewState
+import com.realityexpander.learningble.bluetooth.ChatServer
+import com.realityexpander.learningble.utils.SERVICE_UUID
+import com.realityexpander.learningble.states.DeviceScanViewState
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.yield

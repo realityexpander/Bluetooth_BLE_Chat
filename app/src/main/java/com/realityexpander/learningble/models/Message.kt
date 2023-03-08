@@ -1,4 +1,4 @@
-package com.example.learningble.models
+package com.realityexpander.learningble.models
 
 
 sealed class Message(val text: String) {

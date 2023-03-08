@@ -1,4 +1,4 @@
-package com.example.learningble
+package com.realityexpander.learningble
 
 import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.ext.junit.runners.AndroidJUnit4
